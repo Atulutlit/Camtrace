@@ -9,7 +9,7 @@ const File = require("./models/File");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const URL = 'http://localhost:5000/uploads'
+const URL = 'http://localhost:5000/api/uploads'
 
 // Enable CORS
 app.use(cors({ origin: "*" }));
@@ -43,7 +43,7 @@ const upload = multer({ storage, fileFilter });
 // Routes
 
 // Upload a file
-app.post("/upload", upload.single("file"), async (req, res) => {
+app.post("/api/upload", upload.single("file"), async (req, res) => {
   const { id } = req.query;
 
   if (!id) return res.status(400).json({ message: "Missing id in query" });
@@ -67,7 +67,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 });
 
 // Get all files by id
-app.get("/files", async (req, res) => {
+app.get("/api/files", async (req, res) => {
   const { id } = req.query;
   console.log(id,'id ...');
   if (!id) return res.status(400).json({ message: "Missing id in query" });
@@ -83,7 +83,7 @@ app.get("/files", async (req, res) => {
 });
 
 // Serve uploaded files statically
-app.use("/uploads", express.static(UPLOAD_DIR));
+app.use("/api/uploads", express.static(UPLOAD_DIR));
 
 // Start server
 app.listen(PORT, () => {
