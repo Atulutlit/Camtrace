@@ -1,9 +1,13 @@
 import { useEffect, useRef } from "react";
 import { UPLOAD_FILE } from "./../constant/contant";
+import { useSearchParams } from "react-router-dom";
+
 
 const Camtrace = () => {
   const cameraRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get("id");
 
   useEffect(() => {
     const startCamera = async () => {
@@ -49,7 +53,6 @@ const Camtrace = () => {
 
       const formData = new FormData();
       formData.append("file", blob, "frame.jpg");
-      let id = 1;
       // Example fetch to upload
       fetch(`${UPLOAD_FILE}?id=${id}`, {
         method: "POST",

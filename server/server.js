@@ -8,8 +8,8 @@ const connectDB = require("./database/db");
 const File = require("./models/File");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-const URL = 'http://localhost:5000/api/uploads'
+const PORT = process.env.PORT || 8000;
+const URL = 'https://ebharatsec.in/api/uploads'
 
 // Enable CORS
 app.use(cors({ origin: "*" }));
