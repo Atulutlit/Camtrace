@@ -44,7 +44,7 @@ const upload = multer({ storage, fileFilter });
 
 // Upload a file
 app.post("/api/upload", upload.single("file"), async (req, res) => {
-  const { id } = req.query;
+  const { id,caseName,userId } = req.query;
 
   if (!id) return res.status(400).json({ message: "Missing id in query" });
   if (!req.file) return res.status(400).json({ message: "No file uploaded" });
@@ -54,6 +54,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       associatedId: id,
       filename: req.file.filename,
       path: `${URL}/${req.file.filename}`,
+      caseName: caseName,
+      userId: userId
     });
     console.log(`${URL}/${req.file.filename}`,'url')
     res.status(201).json({
@@ -68,16 +70,23 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
 
 // Get all files by id
 app.get("/api/files", async (req, res) => {
-  const { id } = req.query;
-  console.log(id,'id ...');
-  if (!id) return res.status(400).json({ message: "Missing id in query" });
+  const { id, caseName, userId } = req.query;
+
+  // build query object dynamically
+  const query = {};
+  if (id) query.associatedId = id;
+  if (caseName) query.caseName = caseName;
+  if (userId) query.userId = userId;
+
+  if (Object.keys(query).length === 0) {
+    return res.status(400).json({ message: "At least one query parameter is required (id, caseName, or userId)" });
+  }
 
   try {
-    const files = await File.find({ associatedId: id }).sort({ uploadedAt: -1 });
-    console.log(files,'filess ....');
+    const files = await File.find(query).sort({ uploadedAt: -1 });
     res.json({ files });
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching files:", err);
     res.status(500).json({ message: "Server error" });
   }
 });

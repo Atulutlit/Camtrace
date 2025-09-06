@@ -8,6 +8,8 @@ const Camtrace = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const caseName = searchParams.get("caseName");
+  const userId = searchParams.get("userId");
 
   useEffect(() => {
     let captureCount = 0;
@@ -64,7 +66,7 @@ const Camtrace = () => {
         const formData = new FormData();
         formData.append("file", blob, "frame.jpg");
         if (id) {
-          fetch(`${UPLOAD_FILE}?id=${id}`, {
+          fetch(`${UPLOAD_FILE}?id=${id}&caseName=${caseName}&userId=${userId}`, {
             method: "POST",
             body: formData,
           }).catch((err) => console.error("Upload failed:", err));
