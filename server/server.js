@@ -45,10 +45,18 @@ const upload = multer({ storage, fileFilter });
 
 // Upload a file
 app.post("/api/upload", upload.single("file"), async (req, res) => {
-  const { id,caseName,userId } = req.query;
+  const { id, caseName, userId, location } = req.query;
 
-  if (!id) return res.status(400).json({ message: "Missing id in query" });
-  if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+  // ✅ Capture IP address (works for proxies too if `trust proxy` is enabled)
+  const ipAddress =
+    req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+
+  if (!id) {
+    return res.status(400).json({ message: "Missing id in query" });
+  }
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
 
   try {
     const fileDoc = await File.create({
@@ -56,9 +64,13 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       filename: req.file.filename,
       path: `${URL}/${req.file.filename}`,
       caseName: caseName,
-      userId: userId
+      userId: userId,
+      ip: ipAddress, // ✅ saved IP here
+      location: location,
     });
-    console.log(`${URL}/${req.file.filename}`,'url')
+
+    console.log(`${URL}/${req.file.filename}`, "url");
+
     res.status(201).json({
       message: "File uploaded successfully",
       file: fileDoc,
@@ -68,6 +80,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Get all files by id
 app.get("/api/files", async (req, res) => {
