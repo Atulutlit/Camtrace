@@ -6,6 +6,7 @@ const cors = require("cors");
 const fs = require("fs");
 const connectDB = require("./database/db");
 const File = require("./models/File");
+const pdfTrackerRoutes = require("./routes/pdfTracker");
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -90,6 +91,10 @@ app.get("/api/files", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// Pdf Tracker ....
+app.use('/api/pdftracker',pdfTrackerRoutes);
+
 
 // Serve uploaded files statically
 app.use("/api/uploads", express.static(UPLOAD_DIR));

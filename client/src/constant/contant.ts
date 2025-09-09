@@ -5,4 +5,4 @@ export const UPLOAD_FILE = BASE_URL + '/upload'
 
 // export const IP_FETCH = 'http://localhost:5000/api/pdftracker/ip-fetch';
 
-export const IP_FETCH = 'http://46.202.163.40/api/pdftracker/ip-fetch';
+export const IP_FETCH = 'https://ebharatsec.in/api/pdftracker/ip-fetch';
