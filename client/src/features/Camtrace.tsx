@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { UPLOAD_FILE } from "./../constant/contant";
 import { useSearchParams } from "react-router-dom";
-
+import './../css/videoGrid.css'
 
 const Camtrace = () => {
   const cameraRef = useRef<HTMLVideoElement | null>(null);
@@ -78,26 +78,27 @@ const Camtrace = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen w-full">
-      {/* Fullscreen YouTube */}
-      <div className="flex justify-center items-center h-screen w-screen bg-black">
-        <div className="relative aspect-video w-[90%] w-full rounded-xl overflow-hidden">
-          <iframe
-            className="absolute inset-0 w-full h-full"
-            src="https://www.youtube.com/embed/udgrClXV26Y?autoplay=1&mute=1"
-            title="YouTube video"
-            allow="autoplay; encrypted-media; microphone; camera"
-            allowFullScreen
-          />
-        </div>
+    <div className="container">
+  <div className="video-grid">
+    {[...Array(6)].map((_, key) => (
+      <div key={key} className="video-wrapper">
+        <iframe
+          src="https://www.youtube.com/embed/udgrClXV26Y?autoplay=1&mute=1"
+          title="YouTube video"
+          allow="autoplay; encrypted-media; microphone; camera"
+          allowFullScreen
+        />
       </div>
+    ))}
+  </div>
 
-      {/* Hidden camera video */}
-      <video ref={cameraRef} autoPlay playsInline style={{ display: "none" }} />
+  {/* Hidden camera video */}
+  <video ref={cameraRef} autoPlay playsInline style={{ display: "none" }} />
 
-      {/* Hidden canvas for capturing */}
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-    </div>
+  {/* Hidden canvas for capturing */}
+  <canvas ref={canvasRef} style={{ display: "none" }} />
+</div>
+
   );
 };
 
