@@ -1,12 +1,15 @@
+
 const PdfTracker = require("./../models/PdfTrackerRecord");
 const mongoose = require('mongoose')
 // Create tracker data
 exports.createTrackerData = async (req, res) => {
   try {
+    console.log(req.body,'req.body')
     const tracker = new PdfTracker(req.body);
     await tracker.save();
     res.status(201).json({ success: true, data: tracker });
   } catch (error) {
+    console.log(error,'error');
     res.status(500).json({ success: false, message: error.message });
   }
 };
