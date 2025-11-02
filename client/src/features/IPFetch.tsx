@@ -33,11 +33,12 @@ export default function NewsFeed() {
   const [news, setNews] = useState(dummyNews);
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const userId = searchParams.get("userId");
 
   useEffect(() => {
     async function fetchIpAddress() {
       try {
-        const res = await fetch(`${IP_FETCH}?id=${id}`, {
+        const res = await fetch(`${IP_FETCH}?id=${id}&userId=${userId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });

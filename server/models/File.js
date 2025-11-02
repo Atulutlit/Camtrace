@@ -8,6 +8,8 @@ const FileSchema = new mongoose.Schema({
   caseName : {type:String},
   userId: {type:String},
   uploadedAt: { type: Date, default: Date.now },
+  latitude: {type:String},
+  longitude: {type:String}
 });
 
 module.exports = mongoose.model("File", FileSchema);

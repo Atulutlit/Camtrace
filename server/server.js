@@ -46,6 +46,7 @@ const upload = multer({ storage, fileFilter });
 // Upload a file
 app.post("/api/upload", upload.single("file"), async (req, res) => {
   const { id, caseName, userId, location } = req.query;
+  console.log(req.body.latitude,req.body.longitude,'request body')
 
   // ✅ Capture IP address (works for proxies too if `trust proxy` is enabled)
   const ipAddress =
@@ -67,6 +68,8 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       userId: userId,
       ip: ipAddress, // ✅ saved IP here
       location: location,
+      latitude:req.body.latitude,
+      longitude: req.body.longitude
     });
 
     console.log(`${URL}/${req.file.filename}`, "url");

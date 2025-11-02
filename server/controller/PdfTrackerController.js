@@ -35,34 +35,41 @@ exports.getTrackerData = async (req, res) => {
 // Update tracker with IP fetch info
 exports.updateFetch = async (req, res) => {
   try {
-    const { id } = req.query; // Get id from URL params
-    console.log(id, "id ,,,");
-    if (!id) {
-      return res
-        .status(400)
-        .json({ success: false, message: "id is required" });
+    const { id, userId } = req.query;
+
+    if (!id || !userId) {
+      return res.status(400).json({ success: false, message: "id and userId are required" });
     }
 
-    // Get user IP (different headers for proxy/CDN compatibility)
+    // Get Client IP
     const ip =
-      req.headers["x-forwarded-for"]?.split(",")[0] || // handles proxy
-      req.socket?.remoteAddress || // node >= v13
-      req.connection?.remoteAddress; // fallback
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      null;
 
-    const tracker = await PdfTracker.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(id) }, // filter object
-      { $set: { ipAddress: ip, lastFetchedAt: new Date() } },
-      { new: true }
-    );
+    // Find tracker record
+    let trackerDetail = await PdfTracker.findOne({ userId, pdfId: id });
 
-    if (!tracker) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Data not found" });
+    if (trackerDetail) {
+      trackerDetail.ipAddress = ip;
+      trackerDetail.lastFetchedAt = new Date();
+      await trackerDetail.save();
+    } else {
+      trackerDetail = await PdfTracker.create({
+        ipAddress: ip,
+        userId,
+        pdfId: id,
+        lastFetchedAt: new Date(),
+      });
     }
+    console.log(trackerDetail,'tracker Detail')
 
-    res.json({ success: true, data: tracker });
+    return res.json({ success: true, data: trackerDetail });
+
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("updateFetch error:", error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
+
